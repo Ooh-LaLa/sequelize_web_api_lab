@@ -1,4 +1,4 @@
-const { Puppy } = require("../models")
+const { Puppy, DogPark } = require("../models")
 
 
 const create = async (req, res) => {
@@ -12,13 +12,12 @@ const create = async (req, res) => {
 
 const index = async (req, res) => {
   try {
-
-    const puppy = await Puppy.findByPk(req.params.id)
-    puppy.set(req.body)
-    await puppy.save()
-
-    res.status(200).json(puppy)
+    const puppies = await Puppy.findAll({
+      include: [{ model: DogPark, as: "dogparks" }],
+    })
+    res.status(200).json(puppies)
   } catch (error) {
+    console.log(error)
     res.status(500).json(error)
   }
 }
@@ -59,12 +58,23 @@ const deletePuppy = async (req, res) => {
   }
 }
 
+const addDogPark = async (req, res) => {
+  try {
+    // Append a catId to req.body:
+    req.body.puppyId = req.params.id
+    const dogPark = await DogPark.create(req.body)
+    res.status(200).json(dogPark)
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
 
 module.exports = {
   create,
   index,
   update,
-  delete: deletePuppy
+  delete: deletePuppy,
+  addDogPark,
 }
 
 
